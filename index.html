@@ -1,15 +1,34 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 	<!-- These meta tags are not necessary for the camera to work -->
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-
 	<title>Camera in browsers - pixo</title>
 </head>
 <style>
+	.panel {
+		background-color: #d8d8d8;
+		padding: 3vw;
+	}
+
+	.carousel {
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-around;
+		gap: 2vw;
+		align-items: center;
+		margin-bottom: 5vw;
+	}
+
+	.carousel img {
+		width: 20vh;
+		height: fit-content;
+	}
+
 	#cameraFileInput {
 		/*display: none;*/
 	}
@@ -24,6 +43,12 @@
 		color: #fff;
 		background-color: #28a745;
 		border-color: #28a745;
+	}
+
+	#invia {
+		position: fixed;
+		bottom: 0;
+		left: 0;
 	}
 
 	.btn {
@@ -48,43 +73,47 @@
 
 <body>
 	<h1 id="message"></h1>
-	<!-- The `label` is attached to the hidden file input -->
-	<label for="img">Seleziona impianto</label>
-	<br><br>
-	<select name="impianti" id="imp">
-		<option value="G26">G26</option>
-		<option value="G29">G29</option>
-		<option value="G30">G30</option>
-		<option value="G32">G32</option>
-	</select>
-	<label for="mat">.</label>
-	<input type="text" maxlength="3" onkeyup="regexValid(event)" id="mat" placeholder="matricola es: 0AA"
-		name="mat"><br><br>
-	<form autocomplete="on" id="formcamera" hidden action="empty" method="post" enctype="multipart/form-data">
-		<!---
+	<div class="panel">
+		<!-- The `label` is attached to the hidden file input -->
+		<label for="img">Seleziona impianto</label>
+		<br><br>
+		<select name="impianti" id="imp">
+			<option value="G26">G26</option>
+			<option value="G29">G29</option>
+			<option value="G30">G30</option>
+			<option value="G32">G32</option>
+		</select>
+		<label for="mat">.</label>
+		<input type="text" maxlength="3" onkeyup="regexValid(event)" id="mat" placeholder="matricola es: 0AA"
+			name="mat"><br><br>
+		<form autocomplete="on" id="formcamera" hidden action="empty" method="post" enctype="multipart/form-data">
+			<!---
 		<h3>DA FILE</h3>
 		<label for="cameraFileInput">
 			<input  name="fileupload" id="cameraFileInput" type="file" accept="image/*" />
 		</label>
 		-->
-		<h3>DA FOTOCAMERA</h3>
-		<label for="cameraFileInput">
-			<input name="fileupload" id="cameraFileInput" type="file" accept="image/*" capture="environment" />
-		</label>
+			<h3>DA FOTOCAMERA</h3>
+			<label for="cameraFileInput">
+				<input onchange="listImg()" multiple="multiple" name="fileupload" id="cameraFileInput" type="file"
+					accept="image/*" capture="environment" />
+			</label>
+		</form>
+	</div>
 
-	</form>
+	<div id="carousel" class="panel carousel">
+		<!----carousel placeholder----->
+	</div>
+
 	<br>
-	<button onclick="invia()" class="btn btn-success" value="Invia">Invia</button>
+	<button id="invia" onclick="invia()" class="btn btn-success" value="Invia">Invia</button>
 </body>
 <script>
-	/*const queryString = window.location.search;
+	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
 	console.log(urlParams);
-	
-	document.getElementById("message").innerText=urlParams.get('message');
-	document.getElementById("cameraFileInput").onchange = function () {
-		//document.getElementById("formcamera").submit();
-	}; */
+	document.getElementById("message").innerText = urlParams.get('message');
+
 	function regexValid(e) {
 		let pattern = /[0-9][A-Z]{2}$/;
 		let result = pattern.test(e.target.value);
@@ -93,9 +122,10 @@
 		else
 			document.getElementById("formcamera").removeAttribute("hidden");
 	}
+
 	function invia() {
 		console.log("test");
-		var url = "http://localhost:3000/fileupload?";
+		var url = "http://192.168.178.58:3000/fileupload?";
 		var uploadFolder = "fileupload";
 		var imp = document.getElementById("imp").value;
 		var mat = document.getElementById("mat").value;
@@ -103,6 +133,22 @@
 		document.getElementById("formcamera").submit();
 	}
 
+	function listImg() {
+		const parent = document.getElementById("carousel")
+		while (parent.firstChild) {
+			parent.removeChild(parent.firstChild);
+		}
+		let imgs = document.getElementById('cameraFileInput').files;
+		for (let i = 0; i < imgs.length; i++) {
+			let reader = new FileReader();
+			reader.readAsDataURL(imgs[i]);
+			reader.addEventListener("load", () => {
+				const node = document.createElement("img");
+				node.setAttribute('src', reader.result);
+				parent.appendChild(node);
+			}, false);
+		}
+	}
 
 </script>
 
