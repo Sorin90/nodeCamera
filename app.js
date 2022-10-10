@@ -5,7 +5,6 @@ const url = require('url');
 const formidable = require('formidable');
 const app = express();
 //const port = process.env.PORT || 3000;
-var port = "";
 const basePath = __dirname;
 const uploadFolder = '/caricati/';
 
@@ -19,10 +18,9 @@ fs.readFile('srvcfg.json', 'utf8', (err, data) => {
 	  console.error(err);
 	  return;
 	}
-	const srvcfg = JSON.parse(data)
-	 port = JSON.parse(data).port;
-	 app.listen(port);
-	console.log('Server started at http://localhost:' + port);
+	const srvcfg = JSON.parse(data);
+	app.listen(srvcfg.port);
+	console.log('Server started at http://localhost:' + srvcfg.port);
   });
 
 
