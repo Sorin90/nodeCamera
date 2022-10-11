@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<!-- These meta tags are not necessary for the camera to work -->
 	<meta charset="utf-8" />
@@ -72,9 +73,12 @@
 </style>
 
 <body>
-	<h1 id="message"></h1>
+
 	<div class="panel">
 		<!-- The `label` is attached to the hidden file input -->
+		<input type="text" id="ipaddress" placeholder="192.168.254.120" value="192.168.178.58">
+		<input type="text" id="port" placeholder="3000" value="3000">
+		<br><br>
 		<label for="img">Seleziona impianto</label>
 		<br><br>
 		<select name="impianti" id="imp">
@@ -106,14 +110,20 @@
 	</div>
 
 	<br>
-	<button id="invia" onclick="invia()" class="btn btn-success" value="Invia">Invia</button>
+	<button disabled type="button" id="invia" onclick="invia()" class="btn" value="Invia">
+		INVIA<BR>
+		<span id="message"></span>
+	</button>
 </body>
 <script>
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
 	console.log(urlParams);
-	document.getElementById("message").innerText = urlParams.get('message');
 
+	document.getElementById("message").innerText = urlParams.get('message');
+	setTimeout(() => {
+		document.getElementById("message").setAttribute("hidden", '');
+	}, 3000);
 	function regexValid(e) {
 		let pattern = /[0-9][A-Z]{2}$/;
 		let result = pattern.test(e.target.value);
@@ -124,13 +134,14 @@
 	}
 
 	function invia() {
-		console.log("test");
-		var url = "http://192.168.178.58:3000/fileupload?";
-		var uploadFolder = "fileupload";
+		var ipaddress = document.getElementById("ipaddress").value;
+		var port = document.getElementById("port").value;
+		var uploadUrl = "http://" + ipaddress + ":" + port + "/fileupload?";
 		var imp = document.getElementById("imp").value;
 		var mat = document.getElementById("mat").value;
-		document.getElementById("formcamera").action = url + "folder=" + imp + mat;
+		document.getElementById("formcamera").action = uploadUrl + "folder=" + imp + mat;
 		document.getElementById("formcamera").submit();
+
 	}
 
 	function listImg() {
@@ -139,6 +150,9 @@
 			parent.removeChild(parent.firstChild);
 		}
 		let imgs = document.getElementById('cameraFileInput').files;
+		if(imgs.length == 0  )
+		return;
+		document.getElementById("invia").removeAttribute("disabled");
 		for (let i = 0; i < imgs.length; i++) {
 			let reader = new FileReader();
 			reader.readAsDataURL(imgs[i]);
