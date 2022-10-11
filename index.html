@@ -6,14 +6,13 @@
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Camera in browsers - pixo</title>
+	<title>Node</title>
 </head>
 <style>
 	.panel {
 		background-color: #d8d8d8;
 		padding: 3vw;
 	}
-
 	.carousel {
 		position: relative;
 		display: flex;
@@ -24,34 +23,15 @@
 		align-items: center;
 		margin-bottom: 5vw;
 	}
-
 	.carousel img {
 		width: 20vh;
 		height: fit-content;
 	}
-
-	#cameraFileInput {
-		/*display: none;*/
-	}
-
-	#pictureFromCamera {
-		width: 100%;
-		height: auto;
-		margin-top: 16px;
-	}
-
-	.btn-success {
-		color: #fff;
-		background-color: #28a745;
-		border-color: #28a745;
-	}
-
 	#invia {
 		position: fixed;
 		bottom: 0;
 		left: 0;
 	}
-
 	.btn {
 		display: inline-block;
 		font-weight: 400;
@@ -73,14 +53,16 @@
 </style>
 
 <body>
-
 	<div class="panel">
-		<!-- The `label` is attached to the hidden file input -->
+		<span>Parametri</span>
+		<hr>
+		<input type="text" id="user" placeholder="Sorin" value="Sorin">
 		<input type="text" id="ipaddress" placeholder="192.168.254.120" value="192.168.178.58">
 		<input type="text" id="port" placeholder="3000" value="3000">
-		<br><br>
-		<label for="img">Seleziona impianto</label>
-		<br><br>
+		<br>
+		<br>
+		<span>Impianto</span>
+		<hr>
 		<select name="impianti" id="imp">
 			<option value="G26">G26</option>
 			<option value="G29">G29</option>
@@ -91,67 +73,68 @@
 		<input type="text" maxlength="3" onkeyup="regexValid(event)" id="mat" placeholder="matricola es: 0AA"
 			name="mat"><br><br>
 		<form autocomplete="on" id="formcamera" hidden action="empty" method="post" enctype="multipart/form-data">
-			<!---
-		<h3>DA FILE</h3>
-		<label for="cameraFileInput">
-			<input  name="fileupload" id="cameraFileInput" type="file" accept="image/*" />
-		</label>
-		-->
-			<h3>DA FOTOCAMERA</h3>
+			<span>Immagini</span>
+			<hr>
 			<label for="cameraFileInput">
-				<input onchange="listImg()" multiple="multiple" name="fileupload" id="cameraFileInput" type="file"
-					accept="image/*" capture="environment" />
+				<input onreset="listImg()" onchange="listImg()" multiple="multiple" name="fileupload"
+					id="cameraFileInput" type="file" accept="image/*" capture="environment" />
 			</label>
+			<button disabled type="submit" id="invia" class="btn" value="Invia">
+				INVIA<BR>
+				<span id="message"></span>
+			</button>
 		</form>
 	</div>
-
 	<div id="carousel" class="panel carousel">
 		<!----carousel placeholder----->
 	</div>
-
 	<br>
-	<button disabled type="button" id="invia" onclick="invia()" class="btn" value="Invia">
-		INVIA<BR>
-		<span id="message"></span>
-	</button>
 </body>
 <script>
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);
-	console.log(urlParams);
-
 	document.getElementById("message").innerText = urlParams.get('message');
 	setTimeout(() => {
 		document.getElementById("message").setAttribute("hidden", '');
 	}, 3000);
-	function regexValid(e) {
-		let pattern = /[0-9][A-Z]{2}$/;
-		let result = pattern.test(e.target.value);
-		if (!result)
-			document.getElementById("formcamera").setAttribute("hidden", "");
-		else
-			document.getElementById("formcamera").removeAttribute("hidden");
-	}
 
-	function invia() {
+	document.getElementById("formcamera").onsubmit = function () {
 		var ipaddress = document.getElementById("ipaddress").value;
 		var port = document.getElementById("port").value;
 		var uploadUrl = "http://" + ipaddress + ":" + port + "/fileupload?";
 		var imp = document.getElementById("imp").value;
 		var mat = document.getElementById("mat").value;
 		document.getElementById("formcamera").action = uploadUrl + "folder=" + imp + mat;
-		document.getElementById("formcamera").submit();
-
 	}
 
+	function regexValid(e) {
+		let pattern = /[0-9][A-Z]{2}$/;
+		let result = pattern.test(e.target.value);
+		cleanImgList()
+		if (!result) {
+			document.getElementById("formcamera").setAttribute("hidden", "");
+			document.getElementById("invia").setAttribute("disabled", "");
+		}
+		else {
+			document.getElementById("formcamera").removeAttribute("hidden");
+			document.getElementById("formcamera").reset();
+		}
+	}
+
+	function cleanImgList() {
+		const parent = document.getElementById("carousel")
+		while (parent.firstChild) {
+			parent.removeChild(parent.firstChild);
+		}
+	}
 	function listImg() {
 		const parent = document.getElementById("carousel")
 		while (parent.firstChild) {
 			parent.removeChild(parent.firstChild);
 		}
 		let imgs = document.getElementById('cameraFileInput').files;
-		if(imgs.length == 0  )
-		return;
+		if (imgs.length == 0)
+			return;
 		document.getElementById("invia").removeAttribute("disabled");
 		for (let i = 0; i < imgs.length; i++) {
 			let reader = new FileReader();
@@ -163,7 +146,5 @@
 			}, false);
 		}
 	}
-
 </script>
-
 </html>
